@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaporeLab — Problemi d'Esame</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0e14;--surface:#12131a;--card:#16181f;
+  --border:#1e2028;--border-light:#1a1b22;
+  --accent:#e8843a;--accent-dim:#2a1508;
+  --ink:#c8cdd8;--muted:#8090a8;--hint:#3a4050;
+  --green:#2a9a5a;--green-bg:#0a1e12;
+  --red:#c04030;--red-bg:#1e0c08;
+  --blue:#3a6aaa;--blue-bg:#0a1020;
+  --purple:#7a4aaa;--purple-bg:#120a1e;
+  --amber:#a07030;--amber-bg:#1a1208;
+  --sw:260px;
+  --mono:'Share Tech Mono',monospace;
+  --display:'Barlow Condensed',sans-serif;
+  --body:'Barlow',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);font-size:16px;line-height:1.65;overflow-x:hidden}
+
+/* ══ SIDEBAR ══ */
+:root{--rail:60px;--expanded:300px}
+
+#rail{
+  width:var(--rail);height:100vh;
+  background:#12131a;
+  border-right:1px solid #1e2028;
+  display:flex;flex-direction:column;align-items:center;
+  position:fixed;top:0;left:0;z-index:60;
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:none;
+}
+#rail::-webkit-scrollbar{display:none}
+
+#rail-logo{
+  width:100%;height:56px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid #1e2028;
+  font-family:var(--display);font-size:11px;font-weight:800;
+  letter-spacing:.12em;text-transform:uppercase;color:#e8843a;
+  cursor:pointer;
+}
+#rail-logo:hover{background:#1a1b24}
+
+#rail .ri-btn{
+  width:100%;height:52px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;cursor:pointer;
+  border-left:3px solid transparent;
+  border-bottom:1px solid #1a1b22;
+  transition:background .12s;
+}
+#rail .ri-btn:hover{background:#1a1b24}
+#rail .ri-btn.active{background:#3d1a0a;border-left-color:#e8843a}
+
+#sb-panel{
+  width:var(--expanded);height:100vh;
+  background:#12131a;
+  border-right:1px solid #1e2028;
+  position:fixed;top:0;left:var(--rail);z-index:55;
+  display:flex;flex-direction:column;
+  transform:translateX(-110%);
+  transition:transform .2s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;scrollbar-width:none;
+  box-shadow:6px 0 32px rgba(0,0,0,.7);
+}
+#sb-panel::-webkit-scrollbar{display:none}
+#sb-panel.open{transform:translateX(0)}
+
+#sb-panel-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;height:56px;flex-shrink:0;
+  border-bottom:1px solid #1e2028;
+}
+#sb-panel-hd span{
+  font-family:var(--display);font-size:11px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:#3a4050;
+}
+#sb-close{
+  background:none;border:none;font-size:16px;
+  color:#4a5060;cursor:pointer;padding:6px;line-height:1;
+}
+#sb-close:hover{color:#9098a8}
+
+.sb-sec{
+  padding:14px 20px 6px;
+  font-family:var(--display);font-size:9px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:#2e3340;
+}
+
+.sb-item{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 20px;
+  border-bottom:1px solid #1a1b22;
+  cursor:pointer;transition:background .1s;
+  border-left:3px solid transparent;
+}
+.sb-item:hover{background:#1a1b24}
+.sb-item.active{background:#3d1a0a;border-left-color:#e8843a}
+
+.sb-item-icon{font-size:22px;flex-shrink:0;line-height:1}
+.sb-item-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sb-item-title{
+  font-family:var(--body);font-size:15px;font-weight:500;
+  color:#c8cdd8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sb-item.active .sb-item-title{color:#e8843a;font-weight:600}
+.sb-item-desc{
+  font-family:var(--body);font-size:11px;color:#3a4050;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* ══ MAIN ══ */
+#main{margin-left:var(--rail);padding:36px 40px 60px}
+
+/* ══ NO TOPBAR / NO OVERLAY ══ */
+#overlay{display:none}
+#topbar{display:none}
+
+/* ══ PANELS ══ */
+.panel{display:none}.panel.active{display:block}
+
+/* ══ SOLUTION TAB ══ */
+.sol-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;margin-top:20px;padding:14px;
+  background:var(--card);border:1.5px solid var(--border);
+  border-radius:8px;cursor:pointer;
+  font-family:var(--display);font-size:14px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);transition:all .15s;
+}
+.sol-btn:hover{background:var(--accent-dim);border-color:var(--accent);color:var(--ink)}
+.sol-btn.open{background:var(--ink);border-color:var(--ink);color:#fff}
+.sol-btn .lock{font-size:16px;transition:transform .2s}
+.sol-btn.open .lock{transform:rotate(-20deg)}
+.sol-panel{display:none;margin-top:0}
+.sol-panel.open{display:block}
+.ph{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:22px;padding-bottom:14px;border-bottom:2px solid var(--border)}
+.ph-num{font-family:var(--display);font-size:38px;font-weight:800;color:var(--accent);line-height:1}
+.ph-title{font-family:var(--display);font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;flex:1}
+.ph-badge{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:3px;background:var(--blue-bg);color:var(--blue)}
+
+/* ══ TRACCIA ══ */
+.traccia{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:18px}
+.blabel{font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hint);margin-bottom:8px}
+.traccia p{margin-bottom:8px;color:var(--muted);font-size:15px}
+.dati-grid{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;margin:10px 0}
+.dati-grid li{font-family:var(--mono);font-size:13px;padding:4px 0;border-bottom:1px dashed var(--border-light);display:flex;gap:8px}
+.dk{color:var(--hint);flex-shrink:0}.dv{color:var(--ink)}
+.chiede{margin-top:12px;padding-top:10px;border-top:1px solid var(--border-light);font-weight:600;color:var(--ink);font-size:15px}
+
+/* ══ STEPS ══ */
+.steps-lbl{font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hint);margin-bottom:8px}
+.step{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.step-btn{
+  width:100%;display:flex;align-items:center;gap:12px;
+  padding:14px 16px;background:none;border:none;cursor:pointer;
+  text-align:left;font-family:var(--body);transition:background .12s;
+}
+.step-btn:hover,.step.open .step-btn{background:var(--accent-dim)}
+.snum{font-family:var(--mono);font-size:12px;color:var(--accent);min-width:28px}
+.sname{font-weight:600;font-size:15px;color:var(--ink);flex:1;line-height:1.3}
+.schev{font-size:11px;color:var(--hint);transition:transform .2s;flex-shrink:0}
+.step.open .schev{transform:rotate(180deg)}
+.step-body{display:none;padding:6px 16px 18px;border-top:1px solid var(--border-light)}
+.step.open .step-body{display:block}
+.step-body p{color:var(--muted);font-size:14px;margin:8px 0;line-height:1.65}
+
+/* ══ FORMULA ══ */
+.fblock{
+  background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  padding:14px 16px;margin:10px 0;
+  font-family:var(--mono);font-size:13px;line-height:2;
+  white-space:pre;overflow-x:auto;color:var(--ink);
+}
+.fv{color:#1e4a90}.fn{color:#1e6b3a}.fr{color:#b03010;font-weight:700}
+.fsrc{font-size:12px;color:var(--hint);margin:4px 0 10px;font-style:italic;padding-left:2px}
+
+/* ══ BOX ══ */
+.box{border-radius:6px;padding:11px 15px;font-size:14px;margin:10px 0;line-height:1.65}
+.box strong{display:block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.b-warn{background:var(--red-bg);border-left:3px solid var(--red);color:var(--red)}
+.b-note{background:var(--amber-bg);border-left:3px solid var(--accent);color:var(--amber)}
+.b-concept{background:var(--green-bg);border-left:3px solid var(--green);color:var(--green)}
+.b-ref{background:var(--blue-bg);border-left:3px solid var(--blue);color:var(--blue);font-size:13px}
+.b-fix{background:var(--red-bg);border:1.5px solid var(--red);border-radius:6px;color:var(--red)}
+
+/* ══ MINI TABLE ══ */
+.mt{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+.mt th{font-family:var(--display);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--ink);padding:6px 9px;border:1px solid var(--border);text-align:center}
+.mt td{font-family:var(--mono);padding:5px 9px;border:1px solid var(--border-light);color:var(--muted);text-align:center}
+.mt tr.hl td{background:var(--accent-dim);color:var(--ink);font-weight:600}
+.mt td:first-child{color:var(--ink);font-weight:500;background:var(--bg);text-align:left}
+
+/* ══ RIEPILOGO ══ */
+.rip{background:var(--card);border:2px solid var(--border);border-radius:8px;margin-top:22px;overflow:hidden}
+.rip-hd{background:var(--ink);color:#fff;padding:10px 16px;font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.rip-bd{padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.ri{display:flex;flex-direction:column;gap:2px}
+.ri-lbl{font-size:11px;color:var(--hint);text-transform:uppercase;letter-spacing:.05em}
+.ri-val{font-family:var(--mono);font-size:17px;color:var(--green)}
+.ri-u{font-size:12px;color:var(--hint)}
+
+/* ══ REFERENCE PANELS ══ */
+.ref-hd{font-family:var(--display);font-size:24px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.ref-sub{font-size:14px;color:var(--hint);margin-bottom:6px}
+.search-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--card);border:1.5px solid var(--border);border-radius:8px;
+  padding:10px 14px;margin-bottom:20px;
+}
+.search-bar input{
+  border:none;background:none;font-family:var(--body);font-size:15px;
+  color:var(--ink);flex:1;outline:none;
+}
+.search-bar input::placeholder{color:var(--hint)}
+.search-bar span{font-size:18px;color:var(--hint)}
+.ref-sec{margin-bottom:28px}
+.ref-sec-title{font-family:var(--display);font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink);padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.bt{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px}
+.bt th{font-family:var(--display);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--ink);padding:6px 8px;border:1px solid var(--border);text-align:center}
+.bt td{font-family:var(--mono);padding:5px 8px;border:1px solid var(--border-light);color:var(--muted);text-align:center}
+.bt tr:nth-child(even) td{background:#faf9f6}
+.bt tr.hl td{background:var(--accent-dim);color:var(--ink);font-weight:600}
+.bt td:first-child{color:var(--ink);font-weight:500;background:var(--bg);text-align:left}
+.app-card{
+  background:var(--purple-bg);border:1px solid #c8a8f0;border-radius:8px;
+  padding:16px 18px;margin-bottom:12px;
+}
+.app-card[data-hidden="true"]{display:none}
+.app-title{font-family:var(--display);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--purple);margin-bottom:8px}
+.app-body{font-size:14px;color:#3a1a5a;line-height:1.7}
+.app-body p{margin-bottom:8px}.app-body p:last-child{margin-bottom:0}
+.no-results{text-align:center;color:var(--hint);padding:32px;font-size:14px}
+
+/* ══ WELCOME ══ */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;color:var(--hint)}
+.welcome-logo{font-family:var(--display);font-size:52px;font-weight:800;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:768px){
+  :root{--rail:52px;--expanded:200px}
+  #main{padding:24px 14px 60px}
+  .dati-grid{grid-template-columns:1fr}
+  .rip-bd{grid-template-columns:1fr 1fr}
+  .fblock{font-size:12px;padding:10px 12px}
+  .ph-num{font-size:28px}
+  .ph-title{font-size:15px}
+  .sname{font-size:13px}
+}
+@media(max-width:480px){
+  .rip-bd{grid-template-columns:1fr}
+  .bt{font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<div id="overlay"></div>
+<div id="topbar"></div>
+
+<!-- RAIL — always visible icon strip -->
+<div id="rail">
+  <div id="rail-logo">V</div>
+  <div class="ri-btn" data-panel="ref-tavole" title="Tavole numeriche">▦</div>
+  <div class="ri-btn" data-panel="ref-teoria" title="Teoria">◈</div>
+  <div style="width:100%;height:1px;background:#2a2d35;margin:4px 0;flex-shrink:0"></div>
+  <div id="rail-problems"></div>
+</div>
+
+<!-- EXPANDED PANEL — slides in as overlay beside rail -->
+<div id="sb-panel">
+  <div id="sb-panel-hd">
+    <span id="sb-panel-title">Menu</span>
+    <button id="sb-close" onclick="closePanel()">✕</button>
+  </div>
+  <div id="sb-panel-body"></div>
+</div>
+
+<!-- MAIN -->
+<main id="main">
+  <!-- WELCOME — ciclo termico SVG -->
+  <div id="welcome">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-family:var(--display);font-size:32px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)">VaporeLab</div>
+      <div style="font-size:14px;color:var(--hint);margin-top:4px">Seleziona un problema dalla barra laterale</div>
+    </div>
+
+    <!-- Ciclo centrale a vapore -->
+    <svg viewBox="0 0 520 340" xmlns="http://www.w3.org/2000/svg"
+         style="width:100%;max-width:560px;display:block;margin:0 auto">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#e8a040"/>
+        </marker>
+        <marker id="arr-b" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#4a90c8"/>
+        </marker>
+        <marker id="arr-g" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#3db87a"/>
+        </marker>
+      </defs>
+
+      <!-- CALDAIA -->
+      <rect x="30" y="110" width="100" height="120" rx="6"
+            fill="#1e2028" stroke="#e8a040" stroke-width="2"/>
+      <text x="80" y="162" text-anchor="middle" fill="#e8a040"
+            font-family="Barlow Condensed,sans-serif" font-size="13" font-weight="700" letter-spacing="1">CALDAIA</text>
+      <text x="80" y="178" text-anchor="middle" fill="#9a9088"
+            font-family="Barlow,sans-serif" font-size="10">Generatore</text>
+      <text x="80" y="191" text-anchor="middle" fill="#9a9088"
+            font-family="Barlow,sans-serif" font-size="10">di vapore</text>
+      <!-- Fiamma -->
+      <text x="80" y="222" text-anchor="middle" font-size="22">🔥</text>
+
+      <!-- TURBINA -->
+      <rect x="210" y="90" width="100" height="100" rx="6"
+            fill="#1e2028" stroke="#c0c8d8" stroke-width="1.5"/>
+      <text x="260" y="135" text-anchor="middle" fill="#d0d8e8"
+            font-family="Barlow Condensed,sans-serif" font-size="13" font-weight="700" letter-spacing="1">TURBINA</text>
+      <text x="260" y="152" text-anchor="middle" fill="#9a9088"
+            font-family="Barlow,sans-serif" font-size="10">Espansione</text>
+      <text x="260" y="165" text-anchor="middle" font-size="18">⚙️</text>
+
+      <!-- ALTERNATORE -->
+      <rect x="210" y="215" width="100" height="70" rx="6"
+            fill="#1e2028" stroke="#3db87a" stroke-width="1.5"/>
+      <text x="260" y="247" text-anchor="middle" fill="#3db87a"
+            font-family="Barlow Condensed,sans-serif" font-size="12" font-weight="700" letter-spacing="1">ALTERNATORE</text>
+      <text x="260" y="264" text-anchor="middle" font-size="16">⚡</text>
+
+      <!-- CONDENSATORE -->
+      <rect x="390" y="110" width="100" height="120" rx="6"
+            fill="#1e2028" stroke="#4a90c8" stroke-width="1.5"/>
+      <text x="440" y="158" text-anchor="middle" fill="#4a90c8"
+            font-family="Barlow Condensed,sans-serif" font-size="13" font-weight="700" letter-spacing="1">COND.</text>
+      <text x="440" y="174" text-anchor="middle" fill="#9a9088"
+            font-family="Barlow,sans-serif" font-size="10">Condensatore</text>
+      <text x="440" y="220" text-anchor="middle" font-size="20">💧</text>
+
+      <!-- POMPA -->
+      <ellipse cx="240" cy="310" rx="28" ry="20" fill="#1e2028" stroke="#9a9088" stroke-width="1.5"/>
+      <text x="240" y="307" text-anchor="middle" fill="#c0c8d8"
+            font-family="Barlow Condensed,sans-serif" font-size="10" font-weight="700">POMPA</text>
+      <text x="240" y="320" text-anchor="middle" font-size="12">🔃</text>
+
+      <!-- FRECCE VAPORE (arancio) caldaia→turbina -->
+      <line x1="130" y1="140" x2="207" y2="125"
+            stroke="#e8a040" stroke-width="2" marker-end="url(#arr)"/>
+      <text x="168" y="120" text-anchor="middle" fill="#e8a040"
+            font-family="Share Tech Mono,monospace" font-size="9">vapore</text>
+      <text x="168" y="130" text-anchor="middle" fill="#e8a040"
+            font-family="Share Tech Mono,monospace" font-size="9">surriscaldato</text>
+
+      <!-- FRECCE FUMI (grigio) caldaia→su -->
+      <line x1="80" y1="110" x2="80" y2="60"
+            stroke="#5a6475" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+      <text x="80" y="50" text-anchor="middle" fill="#5a6475"
+            font-family="Share Tech Mono,monospace" font-size="9">fumi</text>
+
+      <!-- FRECCIA turbina→condensatore -->
+      <line x1="310" y1="130" x2="387" y2="148"
+            stroke="#e8a040" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr)"/>
+      <text x="350" y="128" text-anchor="middle" fill="#9a9088"
+            font-family="Share Tech Mono,monospace" font-size="9">vapore esausto</text>
+
+      <!-- FRECCIA condensatore→pompa -->
+      <line x1="440" y1="230" x2="440" y2="310" stroke="#4a90c8" stroke-width="2"/>
+      <line x1="440" y1="310" x2="268" y2="310" stroke="#4a90c8" stroke-width="2" marker-end="url(#arr-b)"/>
+      <text x="380" y="325" text-anchor="middle" fill="#4a90c8"
+            font-family="Share Tech Mono,monospace" font-size="9">acqua condensata</text>
+
+      <!-- FRECCIA pompa→caldaia -->
+      <line x1="212" y1="310" x2="80" y2="310" stroke="#3db87a" stroke-width="2"/>
+      <line x1="80" y1="310" x2="80" y2="232" stroke="#3db87a" stroke-width="2" marker-end="url(#arr-g)"/>
+      <text x="145" y="300" text-anchor="middle" fill="#3db87a"
+            font-family="Share Tech Mono,monospace" font-size="9">acqua alimento</text>
+
+      <!-- FRECCIA turbina→alternatore -->
+      <line x1="260" y1="190" x2="260" y2="212"
+            stroke="#9a9088" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr)"/>
+
+      <!-- OUTPUT ELETTRICO -->
+      <line x1="310" y1="250" x2="380" y2="250"
+            stroke="#3db87a" stroke-width="2" stroke-dasharray="4 2"/>
+      <text x="385" y="254" fill="#3db87a"
+            font-family="Share Tech Mono,monospace" font-size="10">⚡ kWh</text>
+
+      <!-- Label ciclo -->
+      <text x="260" y="22" text-anchor="middle" fill="#5a6475"
+            font-family="Barlow Condensed,sans-serif" font-size="11" letter-spacing="2">CICLO RANKINE — CENTRALE A VAPORE</text>
+    </svg>
+
+    <div style="margin-top:24px;display:flex;gap:20px;flex-wrap:wrap;justify-content:center">
+      <div style="font-size:13px;color:var(--hint);display:flex;align-items:center;gap:6px">
+        <span style="display:inline-block;width:24px;height:2px;background:#e8a040"></span>vapore
+      </div>
+      <div style="font-size:13px;color:var(--hint);display:flex;align-items:center;gap:6px">
+        <span style="display:inline-block;width:24px;height:2px;background:#4a90c8"></span>acqua condensata
+      </div>
+      <div style="font-size:13px;color:var(--hint);display:flex;align-items:center;gap:6px">
+        <span style="display:inline-block;width:24px;height:2px;background:#3db87a"></span>acqua alimento / energia
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAVOLE NUMERICHE ══ -->
+  <div class="panel" id="ref-tavole">
+    <div class="ref-hd">Tavole Numeriche</div>
+    <div class="ref-sub">Dati termodinamici e costanti per l'esame</div>
+
+    <div class="ref-sec">
+      <div class="ref-sec-title">Tabella A — Vapore Saturo (Hl e Hv per pressione)</div>
+      <div class="b-ref box">Usare per: x=0 (liquido saturo → colonna Hl), x=1 (vapore saturo secco → colonna Hv), 0&lt;x&lt;1 (miscela → formula Hu). Fonte: Appendice A, quaderno Bissolo.</div>
+      <table class="bt">
+        <thead><tr><th>P (bar)</th><th>Tsat (°C)</th><th>Hl (Kcal/kg)</th><th>Hv (Kcal/kg)</th><th>r=Hv-Hl</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>99.6</td><td>99.6</td><td>638.8</td><td>539.2</td></tr>
+          <tr><td>2</td><td>120.2</td><td>120.2</td><td>645.5</td><td>525.3</td></tr>
+          <tr><td>5</td><td>151.8</td><td>151.9</td><td>655.0</td><td>503.1</td></tr>
+          <tr class="hl"><td>8</td><td>170.4</td><td>171.3</td><td>660.9</td><td>489.6</td></tr>
+          <tr class="hl"><td>10</td><td>179.9</td><td>179.7</td><td>662.7</td><td>483.0</td></tr>
+          <tr><td>15</td><td>198.3</td><td>198.6</td><td>666.5</td><td>467.9</td></tr>
+          <tr><td>18</td><td>207.1</td><td>207.5</td><td>668.0</td><td>460.5</td></tr>
+          <tr><td>20</td><td>212.4</td><td>212.9</td><td>668.8</td><td>455.9</td></tr>
+          <tr class="hl"><td>30</td><td>233.8</td><td>239.5</td><td>670.1</td><td>430.6</td></tr>
+          <tr><td>40</td><td>250.3</td><td>260.3</td><td>670.2</td><td>409.9</td></tr>
+          <tr class="hl"><td>42</td><td>253.2</td><td>264.0</td><td>669.9</td><td>405.9</td></tr>
+          <tr><td>50</td><td>263.9</td><td>276.3</td><td>669.0</td><td>392.7</td></tr>
+          <tr><td>60</td><td>275.6</td><td>291.8</td><td>667.3</td><td>375.5</td></tr>
+          <tr class="hl"><td>70</td><td>285.8</td><td>305.9</td><td>665.1</td><td>359.2</td></tr>
+          <tr><td>80</td><td>295.0</td><td>319.0</td><td>662.6</td><td>343.6</td></tr>
+          <tr><td>100</td><td>311.0</td><td>343.2</td><td>656.2</td><td>313.0</td></tr>
+          <tr class="hl"><td>125</td><td>327.8</td><td>370.6</td><td>647.7</td><td>277.1</td></tr>
+          <tr><td>130</td><td>330.8</td><td>375.8</td><td>645.7</td><td>269.9</td></tr>
+          <tr class="hl"><td>150</td><td>342.1</td><td>395.4</td><td>638.3</td><td>242.9</td></tr>
+          <tr><td>175</td><td>354.7</td><td>420.0</td><td>626.5</td><td>206.5</td></tr>
+          <tr><td>200</td><td>365.8</td><td>447.8</td><td>608.0</td><td>160.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ref-sec">
+      <div class="ref-sec-title">Tabella B — Vapore Surriscaldato (Hv per P e T)</div>
+      <div class="b-ref box">Usare quando Tv &gt; Tsat della pressione data. Fonte: Appendice B quaderno Bissolo, o diagramma di Mollier zona destra della curva limite superiore.</div>
+      <table class="bt">
+        <thead><tr><th>P (bar)</th><th>250°C</th><th>300°C</th><th>350°C</th><th>400°C</th><th>450°C</th><th>500°C</th><th>550°C</th></tr></thead>
+        <tbody>
+          <tr><td>5</td><td>672</td><td>688</td><td>703</td><td>719</td><td>735</td><td>751</td><td>767</td></tr>
+          <tr class="hl"><td>10</td><td>703</td><td>686</td><td>702</td><td>717</td><td>733</td><td>749</td><td>765</td></tr>
+          <tr><td>18</td><td>—</td><td>—</td><td>750</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>20</td><td>—</td><td>—</td><td>755</td><td>775</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>30</td><td>—</td><td>—</td><td>—</td><td>770</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr class="hl"><td>42</td><td>—</td><td>—</td><td>—</td><td>766</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>70</td><td>—</td><td>675</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr class="hl"><td>125</td><td>—</td><td>—</td><td>—</td><td>726</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>130</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>795</td><td>—</td></tr>
+          <tr class="hl"><td>150</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>825</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ref-sec">
+      <div class="ref-sec-title">Tabella C — Costante K di Hassenstein</div>
+      <div class="b-ref box">Formula: Pcs = K × (Tf − Ta) / %CO₂. K dipende dal combustibile. Se non specificato in traccia, usare K=0.6 (olio generico).</div>
+      <table class="bt">
+        <thead><tr><th>Combustibile</th><th>K</th><th>CO₂max (%)</th></tr></thead>
+        <tbody>
+          <tr><td>Metano / gas naturale</td><td>0.46</td><td>11.7</td></tr>
+          <tr><td>Gasolio</td><td>0.55</td><td>15.4</td></tr>
+          <tr><td>Nafta / Olio BTZ</td><td>0.58</td><td>15.8–16.8</td></tr>
+          <tr class="hl"><td>Olio ATZ / generico</td><td>0.60</td><td>15.8–16.5</td></tr>
+          <tr><td>Carbone</td><td>0.65</td><td>19.0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ref-sec">
+      <div class="ref-sec-title">Tabella D — Aria Stechiometrica</div>
+      <div class="b-ref box">Valori fisso-chimici da tabelle stechiometriche, Bissolo cap. Combustione. Le frazioni vanno usate come decimali (es. 86% → 0.86).</div>
+      <table class="bt">
+        <thead><tr><th>Elemento</th><th>Aria teorica (m³/kg)</th><th>Reazione</th></tr></thead>
+        <tbody>
+          <tr><td>Carbonio (C)</td><td>8.9</td><td>C + O₂ → CO₂</td></tr>
+          <tr><td>Idrogeno (H₂)</td><td>26.9</td><td>2H₂ + O₂ → 2H₂O</td></tr>
+          <tr><td>Zolfo (S)</td><td>3.3</td><td>S + O₂ → SO₂</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ref-sec">
+      <div class="ref-sec-title">Tabella E — Entalpia acqua liquida (H ≈ T)</div>
+      <div class="b-note box"><strong>Convenzione</strong>Per acqua a pressione standard, H (Kcal/kg) ≈ T (°C). Valida fino a ~150°C. Usata in tutti i problemi per Hl dell'acqua di alimento.</div>
+      <table class="bt">
+        <thead><tr><th>T (°C)</th><th>H (Kcal/kg)</th><th>Usato in</th></tr></thead>
+        <tbody>
+          <tr><td>20</td><td>20</td><td>P3, P16 (Ta ambiente)</td></tr>
+          <tr><td>30</td><td>30</td><td>P14 (condensatore)</td></tr>
+          <tr><td>50</td><td>50</td><td>P7</td></tr>
+          <tr><td>60</td><td>60</td><td>P11</td></tr>
+          <tr><td>80</td><td>80</td><td>P1, P2, P4, P5, P6</td></tr>
+          <tr><td>110</td><td>110</td><td>P6, P15</td></tr>
+          <tr><td>120</td><td>120</td><td>P16</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /ref-tavole -->
+
+  <!-- ══ TEORIA & APPROFONDIMENTI ══ -->
+  <div class="panel" id="ref-teoria">
+    <div class="ref-hd">Teoria &amp; Approfondimenti</div>
+    <div class="ref-sub">Formule, metodi e concetti — cerca per parola chiave</div>
+    <div class="search-bar">
+      <span>🔍</span>
+      <input type="text" id="search-input" placeholder="Cerca: Mollier, Hassenstein, rendimento, titolo…" oninput="filterApps()">
+    </div>
+    <div id="app-container">
+
+      <div class="app-card" data-tags="mollier diagramma entalpia entropia surriscaldato saturo zona campana">
+        <div class="app-title">◈ Diagramma di Mollier — Come leggerlo</div>
+        <div class="app-body">
+          <p>Il diagramma H–S (entalpia–entropia) ha tre zone:</p>
+          <p><strong>Zona bifase (sotto la campana):</strong> miscela liquido-vapore. Le isobare entrano da sinistra; il titolo x si legge sulle curve isotitre. Hu = Hl(1-x) + x·Hv.</p>
+          <p><strong>Curva limite superiore (x=1):</strong> vapore saturo secco. Hv della Tabella A corrisponde ai punti su questa curva.</p>
+          <p><strong>Zona surriscaldato (destra della campana):</strong> vapore surriscaldato. Trovare il punto incrocio isobara × isoterma. Usare Tabella B o leggere direttamente dal diagramma.</p>
+          <p><strong>Errore comune:</strong> se Tv &gt; Tsat per la pressione data → surriscaldato (Tabella B). Se Tv = Tsat → saturo secco (Tabella A colonna Hv).</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="hassenstein pcs perdite fumi costante k combustibile formula">
+        <div class="app-title">◈ Formula di Hassenstein — Origine e limiti</div>
+        <div class="app-body">
+          <p>Formula empirica del primo Novecento: <strong>Pcs = K·(Tf − Ta) / %CO₂</strong></p>
+          <p><strong>Perché funziona:</strong> %CO₂ nei fumi è proxy dell'eccesso d'aria. Più CO₂ → meno aria in eccesso → meno calore inutilmente portato via. K incorpora il calore specifico dei gas e la composizione del combustibile.</p>
+          <p><strong>Limiti:</strong> valida solo per combustibili fossili standard. Approssimazione ±1–2% rispetto al calcolo stechiometrico rigoroso.</p>
+          <p><strong>All'esame:</strong> citare sempre "Formula di Hassenstein, K=0.6 per olio combustibile". Vedi Tabella C per i valori di K per combustibile.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="triangolo ostwald co2 o2 n2 eccesso aria combustione fumi composizione">
+        <div class="app-title">◈ Triangolo di Ostwald — Composizione fumi</div>
+        <div class="app-body">
+          <p>Il triangolo di Ostwald è un diagramma triangolare che mette in relazione %CO₂, %O₂ e %CO nei fumi. Permette di ricavare l'eccesso d'aria e di riconoscere condizioni anomale senza calcoli.</p>
+          <p><strong>Come si usa:</strong> si posiziona il punto corrispondente ai valori misurati di CO₂ e O₂. La zona in alto-sinistra indica aria insufficiente (CO presente). La zona in basso-destra indica eccesso d'aria (O₂ alto, CO₂ basso).</p>
+          <p><strong>All'esame:</strong> il triangolo non è richiesto nei calcoli ma può essere citato come strumento di controllo. La formula algebraica e = CO₂max/CO₂ è equivalente per il calcolo dell'eccesso d'aria.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="rendimento diretto indiretto metodo quando usare">
+        <div class="app-title">◈ Metodo diretto vs indiretto — Quando usare quale</div>
+        <div class="app-body">
+          <p><strong>Diretto:</strong> η = Pv·(Hv−Hl)/(Pc·PCI). Richiede Pv e Pc entrambi noti. Usare quando la portata vapore e il consumo combustibile sono misurati.</p>
+          <p><strong>Indiretto:</strong> η = 100 − (Pcs + Pco + Pirr). Richiede analisi fumi (CO₂, CO, Tf, Ta). Preferito all'esame: non richiede misure di portata, individua la causa delle perdite.</p>
+          <p><strong>Trucco:</strong> se il problema dà entrambi i set di dati, calcola η con entrambi come verifica. Differenza &gt; 2% → c'è un errore.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="pcs pco pirr perdite fumi irraggiamento combustione incompleta">
+        <div class="app-title">◈ Pcs, Pco, Pirr — Differenza fisica</div>
+        <div class="app-body">
+          <p><strong>Pcs (calore sensibile fumi):</strong> calore nei fumi caldi che escono dal camino. Formula di Hassenstein. Dipende da Tf, Ta, %CO₂.</p>
+          <p><strong>Pco (combustione incompleta):</strong> calore chimico non liberato per ossidazione incompleta CO→CO₂. Formula: K'·%CO / (%CO+%CO₂), K'=50.</p>
+          <p><strong>Pirr (irraggiamento):</strong> calore disperso dalle pareti della caldaia verso l'esterno. Normalmente 0.5–2% per caldaie grandi. Dato sempre in traccia.</p>
+          <p>Le tre perdite sono fisicamente indipendenti e additive: η = 100 − Pcs − Pco − Pirr.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="titolo x vapore umido saturo hu hv hl miscela bifase">
+        <div class="app-title">◈ Titolo X — Quando usare Hu invece di Hv</div>
+        <div class="app-body">
+          <p>Il titolo x indica la frazione in massa di vapore secco nella miscela bifase.</p>
+          <p><strong>x = 1:</strong> tutto vapore → Hu = Hv (Tabella A colonna Hv).</p>
+          <p><strong>x = 0:</strong> tutto liquido → Hu = Hl (Tabella A colonna Hl).</p>
+          <p><strong>0 &lt; x &lt; 1:</strong> miscela → Hu = Hl·(1−x) + x·Hv. Usare sempre Hu nella formula del rendimento, mai Hv.</p>
+          <p><strong>Errore tipico:</strong> usare Hv anche quando x &lt; 1. Se x non è specificato in traccia, assumere x=1 (vapore saturo secco).</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="indice vaporizzazione produzione vapore combustibile efficienza">
+        <div class="app-title">◈ Indice di vaporizzazione — Significato fisico</div>
+        <div class="app-body">
+          <p>i = Pv/Pc = kg di vapore prodotti per kg di combustibile bruciato.</p>
+          <p><strong>Valori tipici:</strong> 10–16 per olio, 12–14 per gas, 8–11 per carbone. Valori &lt;8 indicano problemi seri.</p>
+          <p><strong>Legame con η:</strong> i = η·(Hv−Hl)/PCI. A parità di PCI e salto entalpico, i cresce linearmente con η.</p>
+          <p><strong>Come usarlo come verifica:</strong> dopo aver calcolato Pc, calcolare i. Se è fuori dal range 8–18, c'è probabilmente un errore di calcolo o di conversione t/h→kg/h.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="pv kg/h t/h conversione unità misura portata vapore">
+        <div class="app-title">◈ Perché Pv va in kg/h e non t/h</div>
+        <div class="app-body">
+          <p>Hv e Hl sono in Kcal/<strong>kg</strong>. PCI è in Kcal/<strong>kg</strong>. Pc è sempre in <strong>kg</strong>/h. Per la coerenza dimensionale, Pv deve essere in <strong>kg</strong>/h.</p>
+          <p>Se Pv è dato in t/h → moltiplicare per 1000. Esempio: 10 t/h = 10.000 kg/h.</p>
+          <p>Sostituire 10 al posto di 10.000 dà un rendimento 1000 volte più piccolo del reale, o un consumo Pc 1000 volte più piccolo.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="pressione manometrica assoluta bar tabella attenzione conversione">
+        <div class="app-title">◈ Pressione manometrica vs assoluta</div>
+        <div class="app-body">
+          <p><strong>Assoluta:</strong> Passo = Pman + 1.013 bar. Usata nelle tabelle termodinamiche.</p>
+          <p><strong>Manometrica:</strong> letta sul manometro (riferita all'atmosfera). Es. manometro a 9 bar = 10 bar assoluti.</p>
+          <p>Nei problemi d'esame la pressione è quasi sempre già in bar assoluti, o indicata esplicitamente (es. P14: "150 bar assoluti").</p>
+          <p>Se la pressione assoluta è &gt;2 bar, la differenza di 1 bar (atmosfera) è trascurabile (&lt;0.5%). Per pressioni basse (0.05–2 bar) la distinzione è critica.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="btz atz olio combustibile zolfo pci k hassenstein differenza">
+        <div class="app-title">◈ Olio BTZ vs ATZ — Differenza e impatto</div>
+        <div class="app-body">
+          <p><strong>BTZ (Basso Tenore di Zolfo):</strong> S ≤ 0.3%. Più leggero, PCI ≈ 9700–9800 Kcal/kg. K Hassenstein ≈ 0.57–0.58.</p>
+          <p><strong>ATZ (Alto Tenore di Zolfo):</strong> S fino al 3–4%. Più pesante, residui di raffineria. PCI ≈ 9500–9650 Kcal/kg. K ≈ 0.60.</p>
+          <p>La distinzione principale per i calcoli è nel valore di K e nel PCI. Se il combustibile non è specificato, usare K=0.6 e PCI ≈ 9600 Kcal/kg.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="economizzatore bilancio termico fumi acqua alimento temperatura">
+        <div class="app-title">◈ Economizzatore — Bilancio termico</div>
+        <div class="app-body">
+          <p>L'economizzatore è uno scambiatore: i fumi caldi cedono calore all'acqua di alimento prima dell'ingresso in caldaia.</p>
+          <p><strong>Schema energetico:</strong> Qau = Qai + Qfi − Qfu − Qde</p>
+          <p>Qfi e Qfu si calcolano con la formula di Hassenstein applicata alle temperature di ingresso/uscita dei fumi nell'economizzatore. Qai = Pv × TH₂O. Qde = dispersioni pareti (dato in traccia, tipicamente 1% di Qfi).</p>
+          <p>La temperatura acqua uscita: τau = Qau / (ca × Pv), con ca = 1 Kcal/kg·°C.</p>
+        </div>
+      </div>
+
+      <div class="app-card" data-tags="pcs pco risurriscaldatore ciclo rankine turbina rendimento totale">
+        <div class="app-title">◈ Ciclo con risurriscaldamento (P16)</div>
+        <div class="app-body">
+          <p>Il vapore espande parzialmente in T1, poi viene risurriscaldato in S2 prima di espandere in T2. Il vantaggio è evitare la zona bifase durante l'espansione (protezione pale turbina) e migliorare l'efficienza.</p>
+          <p><strong>Consumo combustibile con risurriscaldamento:</strong> il denominatore del rendimento include due salti entalpici: Pc = Pv × [(H_out_S1 − H_acqua) + (H_out_S2 − H_in_S2)] / (η × PCI).</p>
+          <p>I punti di lettura sono quattro invece di due: H acqua alimento, H vapore saturo, H uscita S1, H scarico T1 (=ingresso S2), H uscita S2.</p>
+        </div>
+      </div>
+
+      <div id="no-results" class="no-results" style="display:none">Nessun risultato per questa ricerca.</div>
+    </div>
+  </div><!-- /ref-teoria -->
+
+  <div id="problems-container"></div>
+</main>
+
+<script>
+// ─── DATI PROBLEMI ────────────────────────────────────────────────────────────
+const problems = [
+
+{id:0,title:"Calorimetria — Bagno",badge:null,
+ traccia:"Calcolare quanti litri di acqua calda e fredda versare in una vasca da 80 L per ottenere la temperatura di bagno desiderata.",
+ dati:[["V vasca","80 L"],["T acqua calda","80 °C"],["T acqua fredda","15 °C"],["T bagno","35 °C"]],
+ chiede:"Litri di acqua calda Vc e fredda Vf.",
+ steps:[
+  {name:"Bilancio energetico",body:`
+<p>Il calore ceduto dall'acqua calda è uguale al calore assorbito dall'acqua fredda (nessuna perdita, sistema chiuso).</p>
+<div class="fblock">  <span class="fv">Vc × (Tc − Tm)</span> = <span class="fv">Vf × (Tm − Tf)</span>
+
+  Vc × (80 − 35) = Vf × (35 − 15)
+  <span class="fn">Vc × 45 = Vf × 20</span></div>
+<div class="fsrc">Fonte: conservazione dell'energia — calorimetria elementare. Non servono tabelle vapore.</div>
+<div class="box b-note"><strong>Perché non compare ca</strong>Il calore specifico dell'acqua ca = 1 Kcal/kg·°C è uguale per acqua calda e fredda e cancella dall'equazione. La densità ≈ 1 kg/L a queste temperature.</div>`},
+  {name:"Vincolo volume totale → soluzione",body:`
+<div class="fblock">  Vc + Vf = 80   →   Vf = 80 − Vc
+
+  Vc × 45 = (80 − Vc) × 20
+  65 · Vc = 1600
+  <span class="fr">Vc = 24.6 L   →   Vf = 55.4 L</span></div>
+<div class="fsrc">Sistema di due equazioni in due incognite: bilancio energetico + vincolo volume.</div>`}
+ ],
+ risultati:[{label:"Acqua calda",value:"24.6",unit:"L"},{label:"Acqua fredda",value:"55.4",unit:"L"}]
+},
+
+{id:1,title:"Rendimento e indice di vaporizzazione",badge:null,
+ traccia:"Generatore di vapore saturo secco (x=1). Consumo combustibile noto. Metodo diretto.",
+ dati:[["Pv","10 t/h"],["P","30 bar"],["x","1 (saturo secco)"],["T acqua alimento","80 °C"],["Pc","740 Kg/h"],["Combustibile","olio — PCI = 9500 Kcal/kg"]],
+ chiede:"Rendimento η e indice di vaporizzazione i.",
+ steps:[
+  {name:"Lettura Hv — Tabella A, vapore saturo secco",body:`
+<p>Con x=1 il vapore è saturo secco: si legge direttamente la colonna <strong>Hv</strong> dalla Tabella A alla pressione di esercizio.</p>
+<table class="mt"><thead><tr><th>P (bar)</th><th>Tsat (°C)</th><th>Hl (Kcal/kg)</th><th>Hv (Kcal/kg)</th></tr></thead>
+<tbody><tr><td>20</td><td>212.4</td><td>212.9</td><td>668.8</td></tr><tr class="hl"><td>30</td><td>233.8</td><td>239.5</td><td>670.1</td></tr><tr><td>40</td><td>250.3</td><td>260.3</td><td>670.2</td></tr></tbody></table>
+<div class="fblock">  P = 30 bar,  x = 1  →  <span class="fr">Hv = 670 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella A — colonna Hv. Quaderno Bissolo, Appendice A. Riga evidenziata = valore usato.</div>
+<div class="box b-note"><strong>Tabella A vs B vs Mollier</strong>x=0 o x=1 → Tabella A. Titolo 0&lt;x&lt;1 → formula Hu + Tabella A. Tv &gt; Tsat → Tabella B o Mollier zona surriscaldato.</div>`},
+  {name:"Rendimento — metodo diretto",body:`
+<div class="box b-warn"><strong>⚠ Conversione obbligatoria</strong>Pv dato in t/h. La formula richiede kg/h: 10 t/h = 10.000 kg/h. Errore classico: sostituire 10 → rendimento 1000× sbagliato.</div>
+<div class="fblock">              <span class="fv">Pv × (Hv − Hl)</span>
+<span class="fv">η</span> = ─────────────────────
+              <span class="fv">Pc × PCI</span>
+
+     10000 × (670 − 80)
+η = ─────────────────── = <span class="fr">0.84  →  84 %</span>
+       740 × 9500</div>
+<div class="fsrc">Fonte: formula rendimento metodo diretto — D.M. 21.05.74, Art. 5. Hl = T acqua = 80 Kcal/kg (convenzione Tabella E: H≈T per acqua a pressione standard).</div>`},
+  {name:"Indice di vaporizzazione",body:`
+<div class="fblock">     <span class="fv">Pv</span>     10000
+<span class="fv">i</span> = ──── = ───── = <span class="fr">13.5</span>
+     <span class="fv">Pc</span>      740</div>
+<div class="fsrc">Definizione: kg di vapore prodotti per kg di combustibile bruciato. Range normale per olio: 10–16.</div>
+<div class="box b-concept"><strong>Verifica coerenza</strong>i = η·(Hv−Hl)/PCI = 0.84×590/9500 = 13.5 ✓. Se i è fuori da 8–18, c'è un errore di calcolo o di conversione.</div>`}
+ ],
+ risultati:[{label:"Hv",value:"670",unit:"Kcal/kg"},{label:"η",value:"84",unit:"%"},{label:"i",value:"13.5",unit:"kg vap/kg comb"}]
+},
+
+{id:2,title:"Rendimento indiretto, eccesso d'aria, consumo",badge:null,
+ traccia:"Vapore surriscaldato a 250°C. Dati analisi fumi disponibili. Metodo indiretto.",
+ dati:[["Pv","10 t/h"],["P","10 bar"],["Tv","250 °C"],["TH₂O","80 °C"],["Combustibile","nafta — PCI = 9700 Kcal/kg"],["Tf","180 °C"],["Ta","37 °C"],["CO₂","13 %"],["CO","0.5 %"],["Pirr","0 %"]],
+ chiede:"η, eccesso d'aria E, consumo Pc.",
+ steps:[
+  {name:"Lettura Hv — Tabella B, vapore surriscaldato",body:`
+<p>Tsat a 10 bar = 179.9°C. Tv = 250°C &gt; 179.9°C → vapore <strong>surriscaldato</strong>. Non usare Tabella A.</p>
+<table class="mt"><thead><tr><th>P (bar)</th><th>Tsat (°C)</th><th>Hv sat. (Kcal/kg)</th><th>Hv 250°C (Kcal/kg)</th></tr></thead>
+<tbody><tr><td>5</td><td>151.8</td><td>655.0</td><td>672</td></tr><tr class="hl"><td>10</td><td>179.9</td><td>662.7</td><td>703</td></tr><tr><td>20</td><td>212.4</td><td>668.8</td><td>—</td></tr></tbody></table>
+<div class="fblock">  P = 10 bar,  Tv = 250 °C  →  <span class="fr">Hv = 703 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella B — vapore surriscaldato (P × T). Quaderno Bissolo, Appendice B. Alternativa: diagramma di Mollier, isobara 10 bar × isoterma 250°C, zona destra della curva limite superiore.</div>
+<div class="box b-warn"><strong>⚠ Saturo vs surriscaldato</strong>Confrontare sempre Tv con Tsat(P) dalla Tabella A. Se Tv &gt; Tsat → surriscaldato → Tabella B. Usare Hv = 662.7 (saturo) sarebbe un errore: differenza di 40 Kcal/kg.</div>`},
+  {name:"Pcs — Formula di Hassenstein",body:`
+<table class="mt"><thead><tr><th>Combustibile</th><th>K</th><th>CO₂max</th></tr></thead>
+<tbody><tr><td>Metano</td><td>0.46</td><td>11.7%</td></tr><tr class="hl"><td>Nafta/Olio BTZ</td><td>0.58–0.60</td><td>15.8%</td></tr><tr><td>Carbone</td><td>0.65</td><td>19%</td></tr></tbody></table>
+<div class="fblock">              <span class="fv">Tf − Ta</span>     180 − 37
+<span class="fv">Pcs</span> = K × ──────── = 0.6 × ──────── = <span class="fr">6.6 %</span>
+              <span class="fv">% CO₂</span>          13</div>
+<div class="fsrc">Fonte: Formula di Hassenstein. K=0.6 per nafta/olio (Tabella C). Ta=37°C = temperatura aria ambiente comburente, non la temperatura dell'acqua alimento.</div>
+<div class="box b-warn"><strong>⚠ Ta = aria ambiente, NON T acqua</strong>Ta è la temperatura dell'aria che entra nel bruciatore. Confonderla con TH₂O (80°C) cambierebbe il risultato.</div>`},
+  {name:"Pco — Combustione incompleta",body:`
+<div class="fblock">                <span class="fv">% CO</span>                  0.5
+<span class="fv">Pco</span> = K' × ──────────────────── = 50 × ──────── = <span class="fr">1.8 %</span>
+             <span class="fv">% CO + % CO₂</span>       0.5 + 13</div>
+<div class="fsrc">Costante K'=50 fissa per tutti i combustibili fossili. Fonte: Tecnica della combustione, Bissolo cap. 4. Il CO nei fumi è combustibile non bruciato: porta via calore chimico non liberato.</div>`},
+  {name:"Rendimento per via indiretta",body:`
+<div class="fblock"><span class="fv">η</span> = 100 − (Pcs + Pco + Pirr)
+η = 100 − (6.6 + 1.8 + 0) = <span class="fr">91.6 %  →  η = 0.92</span></div>
+<div class="fsrc">Metodo indiretto preferito all'esame: non richiede misure di portata, individua la causa delle perdite. Confronta con P1 (metodo diretto): dà lo stesso η se i dati sono coerenti.</div>`},
+  {name:"Eccesso d'aria — rapporto CO₂",body:`
+<div class="fblock">        <span class="fv">CO₂max</span>     15.8
+<span class="fv">e</span> = ──────── = ────── = <span class="fr">1.22</span>   →   E = 22 %
+        <span class="fv">CO₂</span>         13</div>
+<div class="fsrc">CO₂max per nafta = 15.8% (Tabella C). Alternativa grafica: triangolo di Ostwald — posizionare il punto CO₂=13%, O₂ stimato e leggere l'eccesso d'aria. e&gt;1 = eccesso, e&lt;1 = difetto d'aria.</div>`},
+  {name:"Consumo combustibile — formula inversa",body:`
+<div class="box b-warn"><strong>⚠ Pv: 10 t/h = 10.000 kg/h</strong></div>
+<div class="fblock">              <span class="fv">Pv × (Hv − Hl)</span>     10000 × (703 − 80)
+<span class="fv">Pc</span> = ─────────────────────── = ──────────────────────── = <span class="fr">698 Kg/h</span>
+                   <span class="fv">η × PCI</span>              0.92 × 9700</div>
+<div class="fsrc">Formula rendimento diretto invertita per Pc. Hl = TH₂O = 80 Kcal/kg (Tabella E).</div>`}
+ ],
+ risultati:[{label:"Hv",value:"703",unit:"Kcal/kg"},{label:"Pcs",value:"6.6",unit:"%"},{label:"Pco",value:"1.8",unit:"%"},{label:"η",value:"91.6",unit:"%"},{label:"E eccesso aria",value:"22",unit:"%"},{label:"Pc",value:"698",unit:"Kg/h"}]
+},
+
+{id:3,title:"Rendimento, eccesso d'aria, consumo, indice",badge:null,
+ traccia:"Vapore surriscaldato a 400°C. CO elevato (2%), irraggiamento 2%. Perdite alte.",
+ dati:[["Pv","38 t/h"],["P","20 bar"],["Tv","400 °C"],["Ta","20 °C"],["PCI","9650 Kcal/kg (olio)"],["Tf","230 °C"],["CO₂","13 %"],["CO₂max","16.8 %"],["CO","2 %"],["Pirr","2 %"]],
+ chiede:"η, eccesso d'aria, Pc, indice i.",
+ steps:[
+  {name:"Lettura Hv — Tabella B (20 bar, 400°C)",body:`
+<p>Tsat a 20 bar = 212.4°C. Tv = 400°C &gt; 212.4°C → surriscaldato.</p>
+<table class="mt"><thead><tr><th>P (bar)</th><th>350°C</th><th>400°C</th><th>450°C</th></tr></thead>
+<tbody><tr><td>15</td><td>—</td><td>—</td><td>—</td></tr><tr class="hl"><td>20</td><td>755</td><td>775</td><td>—</td></tr><tr><td>30</td><td>—</td><td>770</td><td>—</td></tr></tbody></table>
+<div class="fblock">  P = 20 bar,  Tv = 400°C  →  <span class="fr">Hv = 775 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella B — Appendice B Bissolo. Alternativa: Mollier, incrocio isobara 20 bar e isoterma 400°C.</div>`},
+  {name:"Pcs e Pco",body:`
+<div class="fblock">         Tf − Ta     230 − 20
+Pcs = K × ──────── = 0.6 × ──────── = <span class="fr">9.7 %</span>
+          % CO₂          13
+
+               % CO                2
+Pco = K' × ──────────────── = 50 × ──── = <span class="fr">6.6 %</span>
+            % CO + % CO₂          15</div>
+<div class="fsrc">Hassenstein per Pcs (K=0.6, Tabella C). K'=50 per Pco. CO=2% è molto elevato: bruciatore mal regolato o difetto d'aria.</div>
+<div class="box b-warn"><strong>⚠ CO = 2% — valore anomalo</strong>In un impianto ben regolato CO &lt; 0.5%. CO=2% segnala combustione fortemente incompleta. Pco = 6.6% da solo abbassa il rendimento di oltre 6 punti.</div>`},
+  {name:"Rendimento indiretto",body:`
+<div class="fblock">η = 100 − (Pirr + Pco + Pcs)
+η = 100 − (2 + 6.6 + 9.7) = <span class="fr">81.7 %  →  η = 0.817</span></div>
+<div class="fsrc">Metodo indiretto. Perdite totali = 18.3% (elevate). In una caldaia moderna ben gestita: 8–12%.</div>`},
+  {name:"Consumo Pc e indice i",body:`
+<div class="box b-warn"><strong>⚠ Pv: 38 t/h = 38.000 kg/h</strong></div>
+<div class="fblock">         Pv × (Hv − Hl)     38000 × (775 − 20)
+Pc = ─────────────────── = ───────────────────── = <span class="fr">3640 Kg/h</span>
+          η × PCI              0.817 × 9650
+
+     Pv     38000
+i = ──── = ───── = <span class="fr">10.4</span>
+     Pc     3640</div>
+<div class="fsrc">Hl = 20 Kcal/kg (Ta acqua = 20°C, Tabella E). i=10.4 è basso ma coerente con η basso.</div>`},
+  {name:"Eccesso d'aria",body:`
+<div class="fblock">     CO₂max     16.8
+e = ──────── = ────── = <span class="fr">1.29</span>   →   E = 29 %
+     CO₂         13</div>
+<div class="fsrc">CO₂max = 16.8% specificato in traccia. Alternativa: triangolo di Ostwald con i valori misurati di CO₂ e CO.</div>`}
+ ],
+ risultati:[{label:"Hv",value:"775",unit:"Kcal/kg"},{label:"η",value:"81.7",unit:"%"},{label:"Pc",value:"3640",unit:"Kg/h"},{label:"i",value:"10.4",unit:"—"},{label:"e",value:"1.29",unit:"(E=29%)"}]
+},
+
+{id:4,title:"Vapore saturo umido — titolo x=0.8",badge:null,
+ traccia:"Vapore saturo umido con titolo x=0.8. Occorre calcolare Hu prima di procedere.",
+ dati:[["Pv","10 t/h"],["P","30 bar"],["x","0.8"],["TH₂O","80 °C"],["Tf","215 °C"],["Tamb","25 °C"],["PCI","9600 Kcal/kg (olio)"],["CO₂","13 %"],["CO","1 %"],["Pirr","1.5 %"]],
+ chiede:"η, Pc, indice i.",
+ steps:[
+  {name:"Lettura Hl e Hv — Tabella A, poi calcolo Hu",body:`
+<p>Con 0&lt;x&lt;1: miscela bifase. Leggere Hl e Hv dalla Tabella A e applicare la formula di interpolazione.</p>
+<table class="mt"><thead><tr><th>P (bar)</th><th>Tsat (°C)</th><th>Hl (Kcal/kg)</th><th>Hv (Kcal/kg)</th></tr></thead>
+<tbody><tr><td>20</td><td>212.4</td><td>212.9</td><td>668.8</td></tr><tr class="hl"><td>30</td><td>233.8</td><td>239.5</td><td>670.1</td></tr><tr><td>40</td><td>250.3</td><td>260.3</td><td>670.2</td></tr></tbody></table>
+<div class="fblock">  <span class="fv">Hu = Hl·(1−x) + x·Hv</span>
+
+  Hu = 239.5·(1−0.8) + 0.8·670.1
+  Hu = 47.9 + 536.1 = <span class="fr">584 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella A colonne Hl e Hv a 30 bar. Formula: media ponderata sul titolo x. Media pesata tra la fase liquida e la fase vapore.</div>
+<div class="box b-warn"><strong>⚠ Usare Hu, NON Hv</strong>Con x&lt;1 il vapore non è tutto secco: usare Hv=670 al posto di Hu=584 sovrastima l'entalpia di 86 Kcal/kg → errore su η e Pc.</div>`},
+  {name:"Pcs e Pco — Hassenstein",body:`
+<div class="fblock">         Tf−Ta     215−25
+Pcs = K × ──────── = 0.6 × ──────── = <span class="fr">8.7 %</span>
+          % CO₂          13
+
+              % CO           1
+Pco = K' × ──────────── = 50 × ──── = <span class="fr">3.6 %</span>
+            CO+CO₂           14</div>
+<div class="fsrc">K=0.6 (olio, Tabella C). K'=50. Ta=25°C = temperatura ambiente.</div>`},
+  {name:"η, Pc, i",body:`
+<div class="fblock">η = 100 − (8.7 + 3.6 + 1.5) = <span class="fr">86.2 %  →  η = 0.862</span></div>
+<div class="box b-warn"><strong>⚠ Pv: 10 t/h = 10.000 kg/h. Usare Hu=584 non Hv.</strong></div>
+<div class="fblock">         Pv·(Hu−Hl₀)     10000·(584−80)
+Pc = ───────────────── = ─────────────────── = <span class="fr">610 Kg/h</span>
+          η·PCI              0.862·9600
+
+     Pv     10000
+i = ──── = ───── = <span class="fr">16.4</span>
+     Pc      610</div>
+<div class="fsrc">Hl₀ = 80 Kcal/kg (T acqua alimento = 80°C, Tabella E). i=16.4 è alto ma coerente: η buono + salto entalpico medio.</div>`}
+ ],
+ risultati:[{label:"Hu",value:"584",unit:"Kcal/kg"},{label:"η",value:"86.2",unit:"%"},{label:"Pc",value:"610",unit:"Kg/h"},{label:"i",value:"16.4",unit:"—"}]
+},
+
+{id:5,title:"Ricavare %CO dai dati",badge:null,
+ traccia:"Pc noto → η per via diretta. Poi doppia inversione: η indiretto → Pco → %CO algebricamente.",
+ dati:[["Pv","13 t/h"],["P","42 bar"],["Tv","400 °C"],["TH₂O","80 °C"],["PCI","9800 Kcal/kg (olio)"],["Pc","1000 Kg/h"],["Tf","160 °C"],["Ta","25 °C"],["CO₂","13 %"],["Pirr","0 %"]],
+ chiede:"η e % CO nei fumi.",
+ steps:[
+  {name:"Lettura Hv — Tabella B (42 bar, 400°C)",body:`
+<p>Tsat a 42 bar ≈ 253°C. Tv=400°C &gt; 253°C → surriscaldato.</p>
+<table class="mt"><thead><tr><th>P (bar)</th><th>400°C</th></tr></thead>
+<tbody><tr><td>30</td><td>770</td></tr><tr class="hl"><td>42</td><td>766</td></tr><tr><td>50</td><td>763</td></tr></tbody></table>
+<div class="fblock">  P = 42 bar,  Tv = 400°C  →  <span class="fr">Hv = 766 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella B — Appendice B Bissolo.</div>`},
+  {name:"η metodo diretto",body:`
+<div class="box b-warn"><strong>⚠ Pv: 13 t/h = 13.000 kg/h</strong></div>
+<div class="fblock">         Pv·(Hv−Hl)     13000·(766−80)
+η = ─────────────── = ──────────────────── = <span class="fr">0.91  →  91 %</span>
+        Pc·PCI           1000·9800</div>
+<div class="fsrc">Metodo diretto: Pv e Pc entrambi noti. Hl=80 Kcal/kg (Tabella E).</div>`},
+  {name:"Pcs e ricavo Pco per differenza",body:`
+<div class="fblock">         Tf−Ta     160−25
+Pcs = K · ──────── = 0.6 · ──────── = <span class="fr">6.2 %</span>
+          % CO₂          13
+
+Pco = 100 − η − Pcs − Pirr
+Pco = 100 − 91 − 6.2 − 0 = <span class="fr">2.8 %</span></div>
+<div class="fsrc">Hassenstein per Pcs. Pco estratto per differenza: il metodo indiretto usato "al contrario".</div>`},
+  {name:"Ricavare %CO — inversione algebrica",body:`
+<div class="fblock">              % CO
+Pco = K' · ────────────────   →   raccogliere %CO:
+            % CO + % CO₂
+
+Pco·%CO₂ = K'·%CO − Pco·%CO
+Pco·%CO₂ = %CO·(K' − Pco)
+
+              Pco · %CO₂          2.8 · 13
+% CO = ─────────────────── = ──────────────── = <span class="fr">0.76 %</span>
+              K' − Pco              50 − 2.8</div>
+<div class="fsrc">Algebra pura: nessuna tabella. K'=50 costante fissa. Mostrare tutti i passaggi intermedi all'esame.</div>
+<div class="box b-fix box"><strong>⚠ Correzione documento originale</strong>Il file riporta %CO=0.26%. Il calcolo algebrico corretto dà 0.76%. Verificare sempre sviluppando l'algebra per intero.</div>`}
+ ],
+ risultati:[{label:"Hv",value:"766",unit:"Kcal/kg"},{label:"η",value:"91",unit:"%"},{label:"Pcs",value:"6.2",unit:"%"},{label:"Pco",value:"2.8",unit:"%"},{label:"%CO fumi",value:"0.76",unit:"%"}]
+},
+
+{id:6,title:"Ricavare %CO₂ dal rendimento noto",badge:null,
+ traccia:"CO=0% → Pco=0. η per via diretta. Poi Hassenstein invertita per trovare %CO₂.",
+ dati:[["Pv","125 t/h"],["P","130 bar"],["Tv","500 °C"],["TH₂O","110 °C"],["PCI","9650 Kcal/kg (nafta)"],["Pc","10000 Kg/h"],["Ta","30 °C"],["Tf","190 °C"],["CO","0 %"],["Pirr","1 %"]],
+ chiede:"η, indice i, %CO₂ allo scarico.",
+ steps:[
+  {name:"Lettura Hv — Tabella B (130 bar, 500°C)",body:`
+<table class="mt"><thead><tr><th>P (bar)</th><th>500°C</th><th>550°C</th></tr></thead>
+<tbody><tr class="hl"><td>130</td><td>795</td><td>—</td></tr><tr><td>150</td><td>—</td><td>825</td></tr></tbody></table>
+<div class="fblock">  P = 130 bar,  Tv = 500°C  →  <span class="fr">Hv = 795 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella B. Pressioni alte (&gt;100 bar): usare sempre Mollier zona surriscaldato o Tabella B. Non interpolare da Tabella A.</div>`},
+  {name:"η diretto e indice i",body:`
+<div class="box b-warn"><strong>⚠ Pv: 125 t/h = 125.000 kg/h</strong></div>
+<div class="fblock">         Pv·(Hv−Hl)     125000·(795−110)
+η = ─────────────── = ──────────────────────── = <span class="fr">0.88  →  88 %</span>
+        Pc·PCI            10000·9650
+
+     Pv     125000
+i = ──── = ──────── = <span class="fr">12.5</span>
+     Pc     10000</div>
+<div class="fsrc">Hl=110 Kcal/kg (TH₂O=110°C, Tabella E).</div>`},
+  {name:"Ricavare %CO₂ — Hassenstein invertita",body:`
+<div class="fblock">Con Pco=0 (CO=0%):
+Pcs = 100 − η − Pirr = 100 − 88 − 1 = <span class="fr">11 %</span>
+
+Da  Pcs = K·(Tf−Ta)/%CO₂  →  inversione:
+
+              K·(Tf−Ta)     0.6·(190−30)
+% CO₂ = ──────────────── = ──────────────── = <span class="fr">8.7 %</span>
+               Pcs               11</div>
+<div class="fsrc">Hassenstein invertita: si conosce Pcs (trovato per differenza) e si vuole %CO₂. Stesso K=0.6 per nafta (Tabella C).</div>`}
+ ],
+ risultati:[{label:"Hv",value:"795",unit:"Kcal/kg"},{label:"η",value:"88",unit:"%"},{label:"i",value:"12.5",unit:"—"},{label:"Pcs",value:"11",unit:"%"},{label:"%CO₂ fumi",value:"8.7",unit:"%"}]
+},
+
+{id:7,title:"Ricavare Pv dalla formula inversa",badge:"2° grado",
+ traccia:"Pc noto, Pv incognita. η per via indiretta, poi formula inversa per Pv.",
+ dati:[["P","70 bar"],["Tv","300 °C"],["TH₂O","50 °C"],["PCI","9700 Kcal/kg (nafta)"],["Pc","4800 Kg/h"],["Ta","30 °C"],["Tf","210 °C"],["CO₂","13 %"],["CO","0 %"],["Pirr","0.5 %"]],
+ chiede:"η, producibilità Pv, indice i.",
+ steps:[
+  {name:"Lettura Hv — Tabella B (70 bar, 300°C)",body:`
+<p>Tsat a 70 bar = 285.8°C. Tv=300°C &gt; 285.8°C → surriscaldato (di poco).</p>
+<table class="mt"><thead><tr><th>P (bar)</th><th>300°C</th><th>350°C</th></tr></thead>
+<tbody><tr><td>50</td><td>—</td><td>—</td></tr><tr class="hl"><td>70</td><td>675</td><td>—</td></tr></tbody></table>
+<div class="fblock">  P = 70 bar,  Tv = 300°C  →  <span class="fr">Hv = 675 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella B. Attenzione: a 70 bar la Tsat è 285.8°C, quindi 300°C è surriscaldato solo di 14°C. Non usare Hv saturo (665 Kcal/kg) che sarebbe 10 Kcal/kg di errore.</div>`},
+  {name:"η metodo indiretto",body:`
+<div class="fblock">         Tf−Ta     210−30
+Pcs = K · ──────── = 0.6 · ──────── = <span class="fr">8.3 %</span>
+          %CO₂          13
+
+η = 100 − (8.3 + 0 + 0.5) = <span class="fr">91.2 %  →  η = 0.91</span></div>
+<div class="fsrc">K=0.6 nafta (Tabella C). CO=0% → Pco=0.</div>`},
+  {name:"Pv — formula inversa del rendimento",body:`
+<div class="fblock">               η·Pc·PCI     0.91·4800·9700
+<span class="fv">Pv</span> = ─────────────────── = ─────────────────── = <span class="fr">68000 Kg/h  =  68 t/h</span>
+                  Hv−Hl          675−50</div>
+<div class="fsrc">Formula rendimento diretto invertita per Pv. Risultato in kg/h; dividere per 1000 per avere t/h. Hl=50 Kcal/kg (TH₂O=50°C, Tabella E).</div>
+<div class="fblock">     Pv     68000
+i = ──── = ───── = <span class="fr">14.2</span>
+     Pc     4800</div>`}
+ ],
+ risultati:[{label:"Hv",value:"675",unit:"Kcal/kg"},{label:"η",value:"91.2",unit:"%"},{label:"Pv",value:"68000",unit:"Kg/h (68 t/h)"},{label:"i",value:"14.2",unit:"—"}]
+},
+
+{id:8,title:"Entalpia vapore umido x=0.7",badge:null,
+ traccia:"Calcolo diretto di Hu con titolo x=0.7 a 8 bar. Base per P9 e P10.",
+ dati:[["P","8 bar"],["x","0.7"]],
+ chiede:"Hu.",
+ steps:[
+  {name:"Lettura Hl e Hv — Tabella A (8 bar)",body:`
+<table class="mt"><thead><tr><th>P (bar)</th><th>Tsat (°C)</th><th>Hl (Kcal/kg)</th><th>Hv (Kcal/kg)</th></tr></thead>
+<tbody><tr><td>5</td><td>151.8</td><td>151.9</td><td>655.0</td></tr><tr class="hl"><td>8</td><td>170.4</td><td>171.3</td><td>660.9</td></tr><tr><td>10</td><td>179.9</td><td>179.7</td><td>662.7</td></tr></tbody></table>
+<div class="fblock">  Hl = 171.3 Kcal/kg   Hv = 660.9 Kcal/kg</div>
+<div class="fsrc">Fonte: Tabella A — Appendice A Bissolo. Riga 8 bar evidenziata.</div>`},
+  {name:"Formula Hu",body:`
+<div class="fblock">  Hu = Hl·(1−x) + x·Hv
+
+  Hu = 171.3·0.3 + 0.7·660.9
+  Hu = 51.4 + 462.6 = <span class="fr">514 Kcal/kg</span></div>
+<div class="fsrc">Formula interpolazione lineare sul titolo x. Valida per 0≤x≤1.</div>
+<div class="box b-ref box">Confronta con P9 (8→10 bar, x=0→Hu=Hl) e P10 (8 bar, x=1→Hu=Hv). I tre problemi coprono tutti i casi possibili del titolo.</div>`}
+ ],
+ risultati:[{label:"Hl",value:"171.3",unit:"Kcal/kg"},{label:"Hv",value:"660.9",unit:"Kcal/kg"},{label:"Hu (x=0.7)",value:"514",unit:"Kcal/kg"}]
+},
+
+{id:9,title:"Entalpia vapore umido x=0 — CORRETTO",badge:null,
+ traccia:"Caso limite: x=0 = tutto liquido. Il documento originale usava per errore x=0.7 (copiato da P8) e Hl sbagliato (8 bar invece di 10 bar).",
+ dati:[["P","10 bar"],["x","0"]],
+ chiede:"Hu con x=0.",
+ steps:[
+  {name:"Lettura Hl — Tabella A (10 bar) — valore corretto",body:`
+<div class="box b-fix box"><strong>⚠ Correzione — documento originale errato</strong>Il file originale usava Hl=171.3 Kcal/kg (valore a 8 bar, copiato da P8) e calcolava Hu come se x=0.7. Due errori sovrapposti.</div>
+<table class="mt"><thead><tr><th>P (bar)</th><th>Hl (Kcal/kg)</th><th>Hv (Kcal/kg)</th></tr></thead>
+<tbody><tr><td>8</td><td>171.3</td><td>660.9</td></tr><tr class="hl"><td>10</td><td>179.7</td><td>662.7</td></tr><tr><td>12</td><td>188.0</td><td>664.3</td></tr></tbody></table>
+<div class="fblock">  P = 10 bar  →  <span class="fr">Hl = 179.7 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella A, colonna Hl a 10 bar. Hl corretto = 179.7 (tabelle aggiornate). Il valore 171.3 è quello della riga 8 bar — riga sbagliata.</div>`},
+  {name:"Formula Hu con x=0 — caso limite",body:`
+<div class="fblock">  Hu = Hl·(1−0) + 0·Hv
+
+  Hu = 179.7·1 + 0 = <span class="fr">179.7 Kcal/kg</span></div>
+<div class="fsrc">Con x=0 tutto il fluido è in fase liquida: Hu=Hl per definizione. Non c'è vapore, non si usa Hv.</div>
+<div class="box b-warn"><strong>⚠ Errore tipico: confondere la pressione</strong>Leggere Hl dalla riga sbagliata (8 invece di 10 bar) dà 171.3 invece di 179.7. Sempre verificare la riga della pressione corrente.</div>`}
+ ],
+ risultati:[{label:"Hl (10 bar, CORR.)",value:"179.7",unit:"Kcal/kg"},{label:"Hu (x=0)",value:"179.7",unit:"Kcal/kg"}]
+},
+
+{id:10,title:"Entalpia vapore saturo secco x=1",badge:"2° grado",
+ traccia:"Caso limite opposto a P9: x=1, tutto vapore. Hu = Hv.",
+ dati:[["P","8 bar"],["x","1"]],
+ chiede:"Hu con x=1.",
+ steps:[
+  {name:"Lettura Hv — Tabella A (8 bar)",body:`
+<table class="mt"><thead><tr><th>P (bar)</th><th>Hl (Kcal/kg)</th><th>Hv (Kcal/kg)</th></tr></thead>
+<tbody><tr class="hl"><td>8</td><td>171.3</td><td>660.9</td></tr></tbody></table>
+<div class="fblock">  Hu = Hl·(1−1) + 1·Hv = 0 + 660.9 = <span class="fr">660.9 Kcal/kg</span></div>
+<div class="fsrc">Con x=1 tutto è vapore → Hu=Hv. Tabella A colonna Hv.</div>
+<div class="box b-concept"><strong>I tre casi del titolo</strong>x=0: Hu=Hl=179.7 (P9, 10 bar). x=0.7: Hu=514 (P8, 8 bar). x=1: Hu=Hv=660.9 (P10, 8 bar).</div>`}
+ ],
+ risultati:[{label:"Hu (x=1)",value:"660.9",unit:"Kcal/kg"}]
+},
+
+{id:11,title:"Ricavare Pcs dall'indice di vaporizzazione",badge:null,
+ traccia:"Tf, Ta e CO₂ non dati. L'indice i permette di ricavare η; poi Pcs per differenza.",
+ dati:[["P","20 bar"],["Tv","350 °C"],["TH₂O","60 °C"],["i","12"],["PCI","9600 Kcal/kg (olio)"],["CO","0 %"],["Pirr","1 %"]],
+ chiede:"Pcs.",
+ steps:[
+  {name:"Lettura Hv — Tabella B (20 bar, 350°C)",body:`
+<table class="mt"><thead><tr><th>P (bar)</th><th>350°C</th><th>400°C</th></tr></thead>
+<tbody><tr class="hl"><td>20</td><td>755</td><td>775</td></tr></tbody></table>
+<div class="fblock">  P = 20 bar,  Tv = 350°C  →  <span class="fr">Hv = 755 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella B. Tsat a 20 bar = 212°C → surriscaldato confermato.</div>`},
+  {name:"η dalla relazione i–η (senza Pcs)",body:`
+<div class="fblock">Dall'identità  i = η·(Hv−Hl) / PCI  →  inversione:
+
+         i · PCI          12 · 9600
+η = ──────────────── = ──────────────── = <span class="fr">0.86  →  86 %</span>
+          Hv − Hl          755 − 60</div>
+<div class="fsrc">Relazione algebrica tra i e η. Non serve Hassenstein perché Tf e CO₂ non sono dati. Hl=60 Kcal/kg (TH₂O=60°C, Tabella E).</div>
+<div class="box b-note"><strong>Quando mancano Tf e CO₂</strong>Normalmente Pcs richiede Hassenstein. Se non si hanno quei dati ma si conosce i, si usa questa identità per trovare η e poi Pcs per differenza.</div>`},
+  {name:"Pcs per differenza",body:`
+<div class="fblock">η = 100 − (Pcs + Pco + Pirr)
+
+Pcs = 100 − η − Pco − Pirr
+Pcs = 100 − 86 − 0 − 1 = <span class="fr">13 %</span></div>
+<div class="fsrc">Metodo indiretto usato al contrario: η è già noto, si vuole Pcs.</div>`}
+ ],
+ risultati:[{label:"Hv",value:"755",unit:"Kcal/kg"},{label:"η",value:"86",unit:"%"},{label:"Pcs",value:"13",unit:"%"}]
+},
+
+{id:12,title:"Ricavare Hv dalla formula del rendimento",badge:null,
+ traccia:"η per via indiretta. L'incognita non è η ma Hv: si inverte la formula diretta.",
+ dati:[["Pv","50 t/h"],["P","20 bar"],["Tv","350 °C"],["Pc","3850 Kg/h"],["TH₂O","80 °C"],["PCI","9700 Kcal/kg (olio)"],["Ta","20 °C"],["Tf","200 °C"],["CO₂","12 %"],["CO","0 %"],["Pirr","1 %"]],
+ chiede:"Hv.",
+ steps:[
+  {name:"η metodo indiretto",body:`
+<div class="fblock">         Tf−Ta     200−20
+Pcs = K · ──────── = 0.6 · ──────── = <span class="fr">9 %</span>
+          %CO₂          12
+
+η = 100 − (9 + 0 + 1) = <span class="fr">90 %  →  η = 0.90</span></div>
+<div class="fsrc">Hassenstein K=0.6 (olio, Tabella C). CO=0 → Pco=0.</div>`},
+  {name:"Invertire la formula diretta per Hv",body:`
+<div class="box b-warn"><strong>⚠ Pv: 50 t/h = 50.000 kg/h</strong></div>
+<div class="fblock">         Pv·(Hv−Hl)
+η = ─────────────────   →   raccogliere Hv:
+          Pc·PCI
+
+η·Pc·PCI = Pv·Hv − Pv·Hl
+
+              η·Pc·PCI + Pv·Hl
+<span class="fv">Hv</span> = ──────────────────────────
+                    Pv
+
+     0.90·3850·9700 + 50000·80
+Hv = ─────────────────────────── = <span class="fr">752 Kcal/kg</span>
+                50000</div>
+<div class="fsrc">Inversione algebrica della formula del rendimento. Hl=80 Kcal/kg (Tabella E).</div>
+<div class="box b-concept"><strong>Verifica</strong>Hv=752 Kcal/kg è compatibile con P=20 bar, Tv=350°C dalla Tabella B (valore atteso ≈ 755 Kcal/kg). ✓ Piccola differenza dovuta ad arrotondamenti.</div>`}
+ ],
+ risultati:[{label:"Pcs",value:"9",unit:"%"},{label:"η",value:"90",unit:"%"},{label:"Hv ricavato",value:"752",unit:"Kcal/kg"}]
+},
+
+{id:13,title:"Aria teorica ed effettiva — stechiometria",badge:null,
+ traccia:"Calcolo dell'aria necessaria alla combustione per via stechiometrica.",
+ dati:[["C","86 %"],["H₂","11 %"],["S","3 %"],["CO₂max","15.8 %"],["CO₂ camino","13 %"]],
+ chiede:"Vat e Vae.",
+ steps:[
+  {name:"Dati stechiometrici — Tabella D",body:`
+<table class="mt"><thead><tr><th>Elemento</th><th>Aria teorica (m³/kg)</th><th>Reazione</th></tr></thead>
+<tbody><tr><td>C</td><td>8.9</td><td>C + O₂ → CO₂</td></tr><tr><td>H₂</td><td>26.9</td><td>2H₂ + O₂ → 2H₂O</td></tr><tr><td>S</td><td>3.3</td><td>S + O₂ → SO₂</td></tr></tbody></table>
+<div class="fsrc">Fonte: Tabella D — valori stechiometrici fisso-chimici, Bissolo cap. Combustione. Usare come frazioni decimali (86% → 0.86).</div>
+<div class="box b-warn"><strong>⚠ % → frazioni decimali</strong>C=86% → moltiplicare per 0.86, non per 86.</div>`},
+  {name:"Calcolo Vat per elemento, poi totale",body:`
+<div class="fblock">  x(C)  = 8.9  × 0.86 = 7.65 m³
+  y(H₂) = 26.9 × 0.11 = 2.96 m³
+  z(S)  = 3.3  × 0.03 = 0.10 m³
+
+  Vat = 7.65 + 2.96 + 0.10 = <span class="fr">10.71 m³/kg</span></div>
+<div class="fsrc">Volumi additivi: C, H₂ e S bruciano simultaneamente. Si somma l'aria necessaria per ciascuno.</div>`},
+  {name:"Eccesso d'aria e Vae",body:`
+<div class="fblock">     CO₂max     15.8
+e = ──────── = ────── = <span class="fr">1.215</span>   →   E = 21.5 %
+     CO₂         13
+
+Vae = e × Vat = 1.215 × 10.71 = <span class="fr">≈ 13 m³/kg</span></div>
+<div class="fsrc">CO₂max=15.8% per olio BTZ/nafta (Tabella C). Alternativa: triangolo di Ostwald per leggere graficamente e.</div>`}
+ ],
+ risultati:[{label:"Vat",value:"10.71",unit:"m³/kg"},{label:"e",value:"1.215",unit:"(21.5%)"},{label:"Vae",value:"≈ 13",unit:"m³/kg"}]
+},
+
+{id:14,title:"Impianto termoelettrico completo",badge:"2° grado",
+ traccia:"Ciclo Rankine completo. Tutti i rendimenti + composizione fumi. Correzione: PKw=18000 kW (non 98000).",
+ dati:[["Pv","500 t/h"],["P vapore","150 bar ass."],["Tv","550 °C"],["TH₂O","30 °C"],["PCI","9700 Kcal/kg (olio)"],["Tf","195 °C"],["Ta","30 °C"],["CO₂","13 %"],["CO","0.5 %"],["Pirr","1 %"],["P scarico turbina","0.05 bar ass."],["PKw","18000 kW"],["C/H₂/S","84.5%/12.5%/3%"]],
+ chiede:"η_gen, Pc, η_ciclo, η_turbina, η_tot, Vae, %O₂, %SO₂, %N₂.",
+ steps:[
+  {name:"H1 vapore prodotto — Tabella B (150 bar, 550°C)",body:`
+<table class="mt"><thead><tr><th>P (bar)</th><th>500°C</th><th>550°C</th></tr></thead>
+<tbody><tr><td>130</td><td>795</td><td>—</td></tr><tr class="hl"><td>150</td><td>—</td><td>825</td></tr></tbody></table>
+<div class="fblock">  P = 150 bar abs,  Tv = 550°C  →  <span class="fr">H1 = 825 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella B. Pressione indicata "assoluta" in traccia → usare direttamente nelle tabelle senza correzioni.</div>`},
+  {name:"η generatore — metodo indiretto",body:`
+<div class="fblock">         Tf−Ta     195−30
+Pcs = K · ──────── = 0.6 · ──────── = <span class="fr">7.6 %</span>
+          %CO₂          13
+
+               %CO              0.5
+Pco = K' · ──────────────── = 50 · ──── = <span class="fr">1.8 %</span>
+            %CO+%CO₂          13.5
+
+η_gen = 100 − (7.6 + 1.8 + 1) = <span class="fr">89.6 %</span></div>
+<div class="fsrc">Hassenstein K=0.6 (olio, Tabella C). K'=50 per Pco.</div>`},
+  {name:"Consumo Pc",body:`
+<div class="box b-warn"><strong>⚠ Pv: 500 t/h = 500.000 kg/h. H0=TH₂O=30 Kcal/kg.</strong></div>
+<div class="fblock">         Pv·(H1−H0)     500000·(825−30)
+Pc = ─────────────── = ──────────────────────── = <span class="fr">≈ 46000 Kg/h</span>
+          η·PCI             0.896·9700</div>
+<div class="fsrc">H0=30 Kcal/kg (acqua condensatore a 30°C, Tabella E).</div>`},
+  {name:"H2 scarico turbina — Tabella A (0.05 bar)",body:`
+<div class="fblock">  P scarico = 0.05 bar abs → vapore saturo
+  <span class="fr">H2 = 611 Kcal/kg</span>   (Tabella A a 0.05 bar)</div>
+<div class="fsrc">Tabella A, pressioni basse. La turbina scarica a bassa pressione (condensatore sotto vuoto).</div>`},
+  {name:"η ciclo termodinamico",body:`
+<div class="fblock">               H1−H2     825−611
+<span class="fv">η_ciclo</span> = ────────── = ────────── = <span class="fr">0.27  →  27 %</span>
+               H1−H0     825−30</div>
+<div class="fsrc">Rendimento del ciclo Rankine: quota di energia termica del vapore convertita in lavoro dalla turbina.</div>`},
+  {name:"η turbina — CORRETTO (PKw=18000, non 98000)",body:`
+<div class="box b-fix box"><strong>⚠ Correzione — documento originale errato</strong>Il file usa PKw=98.000 kW per errore tipografico. Il dato della traccia è 18.000 kW. Con 98.000 kW si ottiene η_turbina=0.78, valore fisicamente incoerente con il contesto.</div>
+<div class="fblock">                    PKw · 860          18000 · 860
+<span class="fv">η_turbina</span> = ───────────────────────── = ─────────────────────────── = <span class="fr">0.145</span>
+                  Pv · (H1 − H2)      500000 · (825 − 611)</div>
+<div class="fsrc">860 = fattore di conversione kWh→Kcal. Pv in kg/h, H in Kcal/kg → Pv·ΔH in Kcal/h = PKw·860.</div>`},
+  {name:"η totale e aria effettiva",body:`
+<div class="fblock">η_tot = η_gen · η_ciclo · η_turbina
+η_tot = 0.896 · 0.27 · 0.145 = <span class="fr">≈ 3.5 %</span>
+
+Vat = 8.9·0.845 + 26.9·0.125 + 3.3·0.03 = 11.04 m³/kg
+e   = 15.8/13 = 1.22  →  Vae = 1.22·11.04 = <span class="fr">≈ 13.5 m³/kg</span></div>
+<div class="fsrc">CO₂max=15.8% per olio (Tabella C). Dati stechiometrici da Tabella D.</div>`},
+  {name:"Composizione fumi %O₂, %SO₂, %N₂",body:`
+<div class="fblock">         e − 1                1.22 − 1
+%O₂ ≈ ──────────── · 21 = ──────────── · 21 = <span class="fr">≈ 4.0 %</span>
+            e                   1.22
+
+%SO₂ = 0.375·(S/C)·CO₂ = 0.375·(3/84.5)·13 ≈ <span class="fr">0.17 %</span>
+
+%N₂ = 100 − CO₂ − SO₂ − O₂ = 100 − 13 − 0.17 − 4.0 ≈ <span class="fr">82.8 %</span></div>
+<div class="fsrc">Formula O₂ approssimata dalla definizione di eccesso d'aria. Formula SO₂ da rapporto stechiometrico S/C. N₂ per differenza a 100%.</div>`}
+ ],
+ risultati:[{label:"η generatore",value:"89.6",unit:"%"},{label:"Pc",value:"≈ 46000",unit:"Kg/h"},{label:"η ciclo",value:"27",unit:"%"},{label:"η turbina CORR.",value:"14.5",unit:"%"},{label:"η totale",value:"≈ 3.5",unit:"%"},{label:"Vae",value:"≈ 13.5",unit:"m³/kg"}]
+},
+
+{id:15,title:"Producibilità, PCI/PCS e economizzatore",badge:null,
+ traccia:"Generatore da 18 MW. Calcolo Pv, PCS, PCI, Pc e temperatura acqua uscita economizzatore.",
+ dati:[["Potenza","18 MW = 15.480.000 Kcal/h"],["P","18 bar"],["Tv","350 °C"],["TH₂O","110 °C"],["η","88 %"],["C/H₂/S","85.5%/11.5%/3%"],["Calore condensazione","600 Kcal/kg"],["Tfi eco.","260 °C"],["Tfu eco.","220 °C"],["CO₂","13.5 %"],["Qde","1% di Qfi"],["K","0.6"],["Tamb","20 °C"]],
+ chiede:"Pv, PCS, PCI, Pc, τau.",
+ steps:[
+  {name:"Lettura Hv — Tabella B (18 bar, 350°C)",body:`
+<table class="mt"><thead><tr><th>P (bar)</th><th>350°C</th></tr></thead>
+<tbody><tr><td>15</td><td>—</td></tr><tr class="hl"><td>18</td><td>750</td></tr><tr><td>20</td><td>755</td></tr></tbody></table>
+<div class="fblock">  P = 18 bar,  Tv = 350°C  →  <span class="fr">Hv = 750 Kcal/kg</span></div>
+<div class="fsrc">Fonte: Tabella B. Tsat a 18 bar = 207°C → 350°C surriscaldato.</div>`},
+  {name:"Producibilità Pv",body:`
+<div class="fblock">         Potenza (Kcal/h)     15.480.000
+<span class="fv">Pv</span> = ──────────────────── = ────────────── = <span class="fr">20640 Kg/h</span>
+               Hv                   750</div>
+<div class="fsrc">1 MW = 860.000 Kcal/h → 18 MW = 15.480.000 Kcal/h. Divisione per Hv dà Pv in kg/h.</div>`},
+  {name:"PCS — Potere Calorifico Superiore",body:`
+<div class="fblock">PCS = %C·8080 + %H₂·28575 + %S·2210
+
+  = 0.855·8080 + 0.115·28575 + 0.003·2210
+  = 6908 + 3286 + 7 = <span class="fr">≈ 10200 Kcal/kg</span></div>
+<div class="fsrc">Poteri calorifici elementari (Bissolo): C=8080, H₂=28575, S=2210 Kcal/kg. PCS include calore condensazione vapore acqua.</div>`},
+  {name:"PCI — Potere Calorifico Inferiore",body:`
+<div class="fblock">PCI = PCS − 600 = 10200 − 600 = <span class="fr">9600 Kcal/kg</span></div>
+<div class="fsrc">600 Kcal/kg = calore di condensazione dell'acqua prodotta dalla combustione H₂ (dato in traccia). PCI è usato nei calcoli pratici: i fumi escono caldi, il vapore non condensa nel camino.</div>`},
+  {name:"Consumo Pc",body:`
+<div class="fblock">         Pv·(Hv−Hl)     20640·(750−110)
+Pc = ─────────────── = ─────────────────── = <span class="fr">≈ 1560 Kg/h</span>
+          η·PCI            0.88·9600</div>
+<div class="fsrc">Hl=110 Kcal/kg (TH₂O=110°C, Tabella E).</div>`},
+  {name:"Bilancio termico economizzatore → τau",body:`
+<div class="fblock">Qps_in  = K·(Tfi−Tamb)/CO₂ = 0.6·(260−20)/13.5 = <span class="fr">10.6 %</span>
+Qfi     = 10.6%·Pc·PCI = 0.106·1560·9600 = <span class="fr">1.587.000 Kcal/h</span>
+
+Qai     = Pv·TH₂O = 20640·110 = <span class="fr">2.270.400 Kcal/h</span>
+
+Qps_out = K·(Tfu−Tamb)/CO₂ = 0.6·(220−20)/13.5 = <span class="fr">8.8 %</span>
+Qfu     = 8.8%·Pc·PCI = <span class="fr">1.317.888 Kcal/h</span>
+
+Qde     = 1%·Qfi = <span class="fr">15.870 Kcal/h</span>
+
+Qau = Qai + Qfi − Qfu − Qde
+Qau = 2270400 + 1587000 − 1317888 − 15870 = <span class="fr">2.523.642 Kcal/h</span>
+
+          Qau          2523642
+τau = ────────── = ─────────── = <span class="fr">≈ 122 °C</span>
+        ca·Pv         1·20640</div>
+<div class="fsrc">Hassenstein applicata ai fumi dell'economizzatore (ingresso e uscita). ca=1 Kcal/kg·°C (acqua). Tamb=20°C = temperatura riferimento, non TH₂O.</div>
+<div class="box b-warn"><strong>⚠ Ta nel bilancio eco. = 20°C (ambiente), NON 110°C (acqua)</strong></div>`}
+ ],
+ risultati:[{label:"Hv",value:"750",unit:"Kcal/kg"},{label:"Pv",value:"20640",unit:"Kg/h"},{label:"PCS",value:"10200",unit:"Kcal/kg"},{label:"PCI",value:"9600",unit:"Kcal/kg"},{label:"Pc",value:"≈ 1560",unit:"Kg/h"},{label:"τau eco.",value:"≈ 122",unit:"°C"}]
+},
+
+{id:16,title:"Surriscaldatore + risurriscaldatore",badge:"2° grado",
+ traccia:"Ciclo con doppio surriscaldamento. Quattro punti di lettura entalpie.",
+ dati:[["Pv","60 t/h"],["P1","125 bar ass."],["Tv1 (uscita S1)","400 °C"],["P2 (dopo T1)","30 bar"],["T scarico T1","250 °C"],["T uscita S2","400 °C"],["TH₂O","120 °C"],["Tf","260 °C"],["Ta","20 °C"],["CO₂","10 %"],["K","0.583"],["Altre perdite","3 %"],["PCI","9800 Kcal/kg"]],
+ chiede:"Energia pre-S1, energia S1, energia S2, η, Pc.",
+ steps:[
+  {name:"Lettura quattro entalpie — Tabella A + Tabella B",body:`
+<p>Schema: E (evaporatore) → H3' (saturo 125 bar) → S1 → H3 (surrisc. 400°C) → T1 → H4 (30 bar, 250°C) → S2 → H5 (30 bar, 400°C).</p>
+<table class="mt"><thead><tr><th>Punto</th><th>Condizione</th><th>Tabella</th><th>H (Kcal/kg)</th></tr></thead>
+<tbody>
+<tr><td>H1</td><td>Acqua alimento 120°C</td><td>E (H≈T)</td><td>120</td></tr>
+<tr><td>H3'</td><td>Liquido saturo 125 bar</td><td>A colonna Hl</td><td>639</td></tr>
+<tr class="hl"><td>H3</td><td>Surriscaldato 125 bar, 400°C</td><td>B</td><td>726</td></tr>
+<tr><td>H4</td><td>Surriscaldato 30 bar, 250°C</td><td>B</td><td>680</td></tr>
+<tr class="hl"><td>H5</td><td>Surriscaldato 30 bar, 400°C</td><td>B</td><td>772</td></tr>
+</tbody></table>
+<div class="fsrc">H3' usa Tabella A colonna Hl (liquido saturo a 125 bar, non vapore). H3, H4, H5 da Tabella B. H1 da Tabella E.</div>`},
+  {name:"Energia nei tre tratti",body:`
+<div class="fblock">  Energia E→S1 = H3' − H1 = 639 − 120 = <span class="fr">519 Kcal/kg</span>
+
+  Energia S1    = H3  − H3'= 726 − 639 = <span class="fr">87 Kcal/kg</span>
+
+  Energia S2    = H5  − H4 = 772 − 680 = <span class="fr">92 Kcal/kg</span></div>
+<div class="fsrc">Tre salti entalpici distinti: evaporazione + surriscaldamento S1 + risurriscaldamento S2. H3-H3' con apice è corretto nel documento originale — nessun refuso.</div>`},
+  {name:"η e consumo Pc",body:`
+<div class="fblock">         Tf−Ta     260−20
+Pcs = K · ──────── = 0.583 · ──────── = <span class="fr">13.4 %</span>
+          %CO₂           10
+
+η = 100 − (13.4 + 3) = <span class="fr">83.5 %  →  η = 0.835</span></div>
+<div class="box b-warn"><strong>⚠ Pv: 60 t/h = 60.000 kg/h. Sommare ENTRAMBI i salti S1+S2.</strong></div>
+<div class="fblock">         Pv·[(H3−H1) + (H5−H4)]     60000·(606+92)
+Pc = ─────────────────────────── = ───────────────────── = <span class="fr">≈ 5148 Kg/h</span>
+                η·PCI                    0.835·9800</div>
+<div class="fsrc">Il combustibile deve fornire energia sia per evaporare e surriscaldare (H3-H1=606) sia per risurriscaldare (H5-H4=92). K=0.583 specificato in traccia (Tabella C: intermedio nafta/olio).</div>`}
+ ],
+ risultati:[{label:"Energia E→S1",value:"519",unit:"Kcal/kg"},{label:"Energia S1",value:"87",unit:"Kcal/kg"},{label:"Energia S2",value:"92",unit:"Kcal/kg"},{label:"η",value:"83.5",unit:"%"},{label:"Pc",value:"≈ 5148",unit:"Kg/h"}]
+}
+
+]; // end problems
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+const container = document.getElementById('problems-container');
+const welcome   = document.getElementById('welcome');
+
+// ─── SIDEBAR DATA ─────────────────────────────────────────────────────────────
+const refItems = [
+  {panel:'ref-tavole', icon:'▦', title:'Tavole numeriche', desc:'Tabelle Hl/Hv, vapore surriscaldato, costanti K, aria stechiometrica'},
+  {panel:'ref-teoria', icon:'◈', title:'Teoria & Approfondimenti', desc:'Mollier, Hassenstein, metodi di calcolo, BTZ/ATZ, ciclo Rankine'},
+];
+
+const icons = ['🛁','⚡','💨','🔥','💧','🔍','📊','🔄','📐','⚗️','🧪','📉','🔬','🌬️','🏭','🌡️','♻️'];
+
+// ─── BUILD RAIL PROBLEM ICONS ─────────────────────────────────────────────────
+const railProblems = document.getElementById('rail-problems');
+problems.forEach((p, idx) => {
+  const btn = document.createElement('div');
+  btn.className = 'ri-btn';
+  btn.dataset.id = p.id;
+  btn.title = `P${p.id} — ${p.title}`;
+  btn.textContent = icons[idx] || '📋';
+  railProblems.appendChild(btn);
+});
+
+// ─── BUILD PROBLEM PANELS ─────────────────────────────────────────────────────
+problems.forEach((p, idx) => {
+  // Panel
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.id = `panel-${p.id}`;
+
+  const badge = p.badge ? `<span class="ph-badge">${p.badge}</span>` : '';
+  const dati = p.dati.map(([k,v])=>`<li><span class="dk">${k}</span><span class="dv">${v}</span></li>`).join('');
+  const steps = p.steps.map((s,i)=>`
+    <div class="step" id="st-${p.id}-${i}">
+      <button class="step-btn" onclick="toggleStep(${p.id},${i})">
+        <span class="snum">§${i+1}</span>
+        <span class="sname">${s.name}</span>
+        <span class="schev">▼</span>
+      </button>
+      <div class="step-body">${s.body}</div>
+    </div>`).join('');
+  const ris = p.risultati.map(r=>`
+    <div class="ri">
+      <div class="ri-lbl">${r.label}</div>
+      <div class="ri-val">${r.value} <span class="ri-u">${r.unit}</span></div>
+    </div>`).join('');
+
+  panel.innerHTML = `
+    <div class="ph">
+      <div class="ph-num">P${p.id}</div>
+      <div class="ph-title">${p.title}</div>${badge}
+    </div>
+    <div class="traccia">
+      <div class="blabel">Traccia</div>
+      <p>${p.traccia}</p>
+      <ul class="dati-grid">${dati}</ul>
+      <div class="chiede">Calcolare: ${p.chiede}</div>
+    </div>
+    <div class="steps-lbl">Svolgimento — espandi gli step</div>
+    ${steps}
+    <button class="sol-btn" onclick="toggleSol(${p.id})">
+      <span class="lock">🔒</span>
+      <span class="sol-lbl">Soluzione</span>
+    </button>
+    <div class="sol-panel" id="sol-${p.id}">
+      <div class="rip">
+        <div class="rip-hd">▪ Riepilogo risultati</div>
+        <div class="rip-bd">${ris}</div>
+      </div>
+    </div>`;
+  container.appendChild(panel);
+});
+
+// ─── SIDEBAR PANEL OPEN/CLOSE ─────────────────────────────────────────────────
+const sbPanel     = document.getElementById('sb-panel');
+const sbPanelBody = document.getElementById('sb-panel-body');
+const sbPanelTitle= document.getElementById('sb-panel-title');
+
+function buildMenu() {
+  let html = '<div class="sb-sec">Riferimenti</div>';
+  refItems.forEach(r => {
+    html += `<div class="sb-item ref-sb-item" data-panel="${r.panel}">
+      <div class="sb-item-icon">${r.icon}</div>
+      <div class="sb-item-body">
+        <div class="sb-item-title">${r.title}</div>
+        <div class="sb-item-desc">${r.desc}</div>
+      </div>
+    </div>`;
+  });
+  html += '<div class="sb-sec">Problemi</div>';
+  problems.forEach((p, idx) => {
+    html += `<div class="sb-item prob-sb-item" data-id="${p.id}">
+      <div class="sb-item-icon">${icons[idx]||'📋'}</div>
+      <div class="sb-item-body">
+        <div class="sb-item-title">P${p.id} — ${p.title}</div>
+        <div class="sb-item-desc">${p.traccia.substring(0,90)}…</div>
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+// Rail click → open panel (stop bubble so doc-click doesn't close immediately)
+document.getElementById('rail').addEventListener('click', e => {
+  e.stopPropagation();
+  if (sbPanel.classList.contains('open')) { closePanel(); return; }
+  sbPanelBody.innerHTML = buildMenu();
+  sbPanelTitle.textContent = 'VaporeLab';
+  sbPanel.classList.add('open');
+
+  sbPanelBody.querySelectorAll('.ref-sb-item').forEach(el => {
+    el.addEventListener('click', e2 => {
+      e2.stopPropagation();
+      showPanel(el.dataset.panel);
+      closePanel();
+    });
+  });
+  sbPanelBody.querySelectorAll('.prob-sb-item').forEach(el => {
+    el.addEventListener('click', e2 => {
+      e2.stopPropagation();
+      showPanel(`panel-${el.dataset.id}`);
+      // mark active icon on rail
+      document.querySelectorAll('#rail .ri-btn').forEach(b => b.classList.remove('active'));
+      const railBtn = [...document.querySelectorAll('#rail .ri-btn')].find(b => String(b.dataset.id) === String(el.dataset.id));
+      if (railBtn) railBtn.classList.add('active');
+      closePanel();
+    });
+  });
+});
+
+// Panel itself stops propagation so clicks inside don't bubble to doc
+sbPanel.addEventListener('click', e => e.stopPropagation());
+
+function closePanel() { sbPanel.classList.remove('open'); }
+
+document.getElementById('sb-close').addEventListener('click', e => { e.stopPropagation(); closePanel(); });
+
+// Click anywhere outside rail+panel → close
+document.addEventListener('click', () => closePanel());
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  welcome.style.display = 'none';
+  const panel = document.getElementById(id);
+  if (panel) panel.classList.add('active');
+}
+
+function toggleStep(pid, idx) {
+  document.getElementById(`st-${pid}-${idx}`).classList.toggle('open');
+}
+
+// ─── SOLUTION TAB ─────────────────────────────────────────────────────────────
+function toggleSol(pid) {
+  const btn   = document.querySelector(`#panel-${pid} .sol-btn`);
+  const solEl = document.getElementById(`sol-${pid}`);
+  const isOpen = btn.classList.toggle('open');
+  solEl.classList.toggle('open', isOpen);
+  btn.querySelector('.lock').textContent    = isOpen ? '🔓' : '🔒';
+  btn.querySelector('.sol-lbl').textContent = isOpen ? 'Nascondi soluzione' : 'Soluzione';
+}
+
+// ─── RICERCA APPROFONDIMENTI ──────────────────────────────────────────────────
+function filterApps() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  let found = 0;
+  document.querySelectorAll('.app-card').forEach(c => {
+    const match = !q ||
+      (c.dataset.tags||'').includes(q) ||
+      c.querySelector('.app-title').textContent.toLowerCase().includes(q) ||
+      c.querySelector('.app-body').textContent.toLowerCase().includes(q);
+    c.style.display = match ? '' : 'none';
+    if (match) found++;
+  });
+  document.getElementById('no-results').style.display = found === 0 ? 'block' : 'none';
+}
+
+function toggleSidebar(){}
+function openSidebar(){}
+function closeSidebar(){}
+</script>
+</body>
+</html>
